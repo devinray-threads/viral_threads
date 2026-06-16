@@ -1,34 +1,34 @@
-// api/create-checkout-session.js
+// api/create-checkout-session.js - Fixed for Vercel
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async function handler(req, res) {
-  console.log('✅ API route called with method:', req.method);
+  console.log('API route called with method:', req.method);
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   if (!process.env.STRIPE_SECRET_KEY) {
-    console.error('❌ STRIPE_SECRET_KEY is missing in Vercel');
+    console.error('❌ STRIPE_SECRET_KEY is missing');
     return res.status(500).json({ error: 'Stripe secret key not configured' });
   }
 
   try {
     const { items } = req.body;
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'No items provided' });
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: 'No items in cart' });
     }
 
-    const lineItems = items.map(item => ({
+    const lineItems = items.map((item) => ({
       price_data: {
         currency: 'usd',
         product_data: {
-          name: item.name || 'Viral Threads Tee',
+          name: item.name,
         },
-        unit_amount: Math.round((item.price || 0) * 100),
+        unit_amount: Math.round(item.price * 100),
       },
-      quantity: item.qty || 1,
+      quantity: item.qty,
     }));
 
     const session = await stripe.checkout.sessions.create({
@@ -40,9 +40,8 @@ module.exports = async function handler(req, res) {
     });
 
     res.status(200).json({ url: session.url });
-
   } catch (error) {
-    console.error('Stripe Error:', error.message);
+    console.error('Stripe Error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
