@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIRAL THREADS • Wear the Culture</title>
+    
+    <!-- 
+      Tailwind CSS Play CDN (https://tailwindcss.com/docs/installation/play-cdn)
+      This is INTENTIONAL for this zero-dependency local demo.
+      It allows you to open index.html with zero setup or build step.
+      
+      For a real production website, replace this with a proper Tailwind build
+      using the Tailwind CLI or PostCSS (recommended).
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Stripe.js - For real payments -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --accent: #22f7dd;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .logo-font {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .section-header {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+        }
+
+        .product-card {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                       box-shadow 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .nav-active {
+            color: #22f7dd;
+            position: relative;
+        }
+        
+        .nav-active:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, #22f7dd, #c026ff);
+        }
+
+        .meme-text {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.04em;
+        }
+
+        .culture-gradient {
+            background: linear-gradient(135deg, #22f7dd, #c026ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .cart-drawer {
+            transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        .product-img {
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                       box-shadow 0.3s ease;
+        }
+        
+        .product-card:hover .product-img {
+            transform: scale(1.04);
+        }
+
+        .viral-badge {
+            background: linear-gradient(90deg, #22f7dd, #c026ff);
+            color: black;
+            font-weight: 700;
+            font-size: 0.65rem;
+            padding: 1px 9px;
+            border-radius: 9999px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-number {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .design-option {
+            transition: all 0.2s ease;
+        }
+        
+        .design-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.2);
+        }
+
+        .pop-culture-bg {
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+                url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill-rule=%22evenodd%22%3E%3Cpath fill=%22%23111111%22 fill-opacity=%220.15%22 d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-10V8h-2v16h-4v2h4v4h2v-4h4v-2h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 6v-4H4v4H0v2h4v4h2V8h4V6H6z%22/%3E%3C/g%3E%3C/svg%27');
+            background-size: 60px 60px;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white">
+    <!-- NAV -->
+    <nav class="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-lg border-b border-white/10">
+        <div class="max-w-screen-2xl mx-auto">
+            <div class="px-8 py-5 flex items-center justify-between">
+                <div class="flex items-center gap-x-3">
+                    <!-- Logo -->
+                    <div class="flex items-center gap-x-2.5">
+                        <div class="w-9 h-9 bg-gradient-to-br from-cyan-400 via-fuchsia-500 to-lime-400 rounded-2xl flex items-center justify-center shadow-inner">
+                            <span class="text-zinc-950 font-black text-3xl tracking-tighter logo-font">VT</span>
+                        </div>
+                        <div>
+                            <span class="font-black text-3xl tracking-tighter logo-font">VIRAL</span>
+                            <span class="font-semibold text-3xl tracking-tight">THREADS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
+                    <a href="#shop" class="hover:text-cyan-400 transition-colors">Shop</a>
+                    <a href="#weekly" class="hover:text-cyan-400 transition-colors">This Week</a>
+                    <a href="#scanner" class="hover:text-cyan-400 transition-colors">Culture Scanner</a>
+                    <a href="#about" class="hover:text-cyan-400 transition-colors">How It Works</a>
+                </div>
+
+                <div class="flex items-center gap-x-4">
+                    <!-- Cart Button -->
+                    <button onclick="toggleCart()"
+                            class="flex items-center gap-x-2 px-5 py-2.5 rounded-3xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all active:scale-[0.985]">
+                        <i class="fa-solid fa-shopping-bag text-lg"></i>
+                        <span class="font-semibold text-sm hidden sm:inline">Cart</span>
+                        <div id="cart-count" 
+                             class="ml-1 bg-cyan-400 text-zinc-950 text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full">0</div>
+                    </button>
+                    
+                    <button class="md:hidden px-4 py-2 text-sm border border-white/20 rounded-3xl">Menu</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <div class="max-w-screen-2xl mx-auto px-8 pt-16 pb-20">
+        <div class="grid md:grid-cols-12 gap-8 items-center">
+            <div class="md:col-span-7">
+                <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-3xl bg-white/5 border border-white/10 mb-6">
+                    <div class="w-2 h-2 bg-lime-400 rounded-full animate-pulse"></div>
+                    <span class="text-xs font-bold tracking-[1.5px] text-lime-400">WEEK OF JUNE 16 • 2026</span>
+                </div>
+                
+                <h1 class="text-7xl md:text-7xl font-black tracking-tighter leading-none mb-4">
+                    WEAR WHAT'S<br>
+                    <span class="culture-gradient">VIRAL.</span>
+                </h1>
+                <p class="max-w-lg text-xl text-white/70 mb-8">
+                    Limited-run t-shirts capturing the biggest pop culture &amp; internet moments in real time. 
+                    Fresh drops every Wednesday.
+                </p>
+                
+                <div class="flex flex-wrap gap-4">
+                    <a href="#shop" 
+                       class="inline-flex items-center justify-center gap-x-3 bg-white text-zinc-950 font-semibold px-8 h-14 rounded-3xl hover:bg-white/90 active:scale-[0.985] transition-all text-base">
+                        <span>Shop This Week's Drops</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </a>
+                    <a href="#weekly" 
+                       class="inline-flex items-center justify-center gap-x-3 border border-white/30 hover:bg-white/5 font-semibold px-8 h-14 rounded-3xl transition-all text-base">
+                        <span>See Weekly Assessment</span>
+                    </a>
+                </div>
+                
+                <div class="flex items-center gap-x-8 mt-10 text-sm">
+                    <div class="flex -space-x-3">
+                        <div class="w-7 h-7 bg-zinc-800 border border-white/20 rounded-full overflow-hidden"><img src="https://i.pravatar.cc/28?img=12" class="w-full h-full object-cover"></div>
+                        <div class="w-7 h-7 bg-zinc-800 border border-white/20 rounded-full overflow-hidden"><img src="https://i.pravatar.cc/28?img=28" class="w-full h-full object-cover"></div>
+                        <div class="w-7 h-7 bg-zinc-800 border border-white/20 rounded-full overflow-hidden"><img src="https://i.pravatar.cc/28?img=47" class="w-full h-full object-cover"></div>
+                    </div>
+                    <div class="text-white/60 text-xs">Joined by <span class="font-semibold text-white">12,847</span> culture wearers this month</div>
+                </div>
+            </div>
+            
+            <div class="md:col-span-5 relative hidden lg:block">
+                <div class="aspect-[4/3] bg-zinc-900 rounded-3xl overflow-hidden border border-white/10 relative">
+                    <img src="assets/supportive-disappointed.jpg" class="absolute inset-0 w-full h-full object-cover opacity-90" alt="Supportive Disappointed tee on model"
+                         onerror="this.style.opacity='0.3'; this.parentNode.style.background='linear-gradient(135deg, #18181b, #27251f)';">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs text-white/60">TRENDING #1 THIS WEEK</div>
+                                <div class="font-semibold">Supportive Disappointed Challenge</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs line-through text-white/40">$34</div>
+                                <div class="font-mono font-bold">$29</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div class="border-y border-white/10 bg-zinc-900/50">
+        <div class="max-w-screen-2xl mx-auto px-8 py-5 grid grid-cols-2 md:grid-cols-4 gap-y-4 text-center text-sm">
+            <div>
+                <span class="font-mono text-2xl font-semibold stat-number">47</span>
+                <span class="text-white/50 ml-1.5">designs dropped</span>
+            </div>
+            <div>
+                <span class="font-mono text-2xl font-semibold stat-number">128k</span>
+                <span class="text-white/50 ml-1.5">tees sold</span>
+            </div>
+            <div>
+                <span class="font-mono text-2xl font-semibold stat-number">19</span>
+                <span class="text-white/50 ml-1.5">countries repping</span>
+            </div>
+            <div class="flex items-center justify-center gap-x-2">
+                <i class="fa-solid fa-globe text-cyan-400"></i>
+                <span class="text-white/70">Real-time culture monitoring active</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHOP SECTION -->
+    <div id="shop" class="max-w-screen-2xl mx-auto px-8 pt-16 pb-12">
+        <div class="flex items-end justify-between mb-8">
+            <div>
+                <div class="uppercase tracking-[2px] text-xs font-bold text-cyan-400 mb-1">THIS WEEK'S LIMITED COLLECTION</div>
+                <h2 class="section-header text-5xl font-bold tracking-tighter">Viral Drops • June 2026</h2>
+            </div>
+            <a href="#weekly" class="hidden md:flex items-center text-sm font-medium text-white/70 hover:text-white transition-colors">
+                View full culture report <i class="fa-solid fa-chevron-right ml-2 text-xs"></i>
+            </a>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6" id="products-grid">
+            <!-- Populated by JS -->
+        </div>
+        
+        <div class="mt-8 text-center">
+            <p class="text-white/50 text-sm">All tees are premium 100% cotton, unisex fit (S–3XL). Limited to 500 prints per design this week.</p>
+        </div>
+    </div>
+
+    <!-- WEEKLY ASSESSMENT -->
+    <div id="weekly" class="bg-zinc-900 border-y border-white/10">
+        <div class="max-w-screen-2xl mx-auto px-8 py-16">
+            <div class="flex flex-col lg:flex-row gap-10">
+                <!-- Assessment Text -->
+                <div class="lg:w-5/12">
+                    <div class="sticky top-24">
+                        <div class="inline-flex items-center px-3 py-1 rounded-2xl bg-gradient-to-r from-cyan-500/10 to-fuchsia-500/10 border border-cyan-400/30 mb-4">
+                            <span class="text-cyan-400 text-xs font-bold tracking-widest">WEDNESDAY ASSESSMENT</span>
+                        </div>
+                        
+                        <h2 class="section-header text-5xl font-bold tracking-tighter leading-none mb-4">This Week in<br>Internet Culture</h2>
+                        <p class="text-white/70 mb-6">June 10 – 16, 2026 • Powered by our Culture Scanner</p>
+                        
+                        <div class="prose prose-invert text-white/80 text-[15px] space-y-5">
+                            <div>
+                                <h4 class="font-semibold text-white mb-1.5 flex items-center gap-x-2"><i class="fa-solid fa-sync text-lime-400 w-4"></i> The Great 2016 Reset</h4>
+                                <p class="text-sm">"2026 is the new 2016" is the dominant meme. Harambe nostalgia, Vine energy, and Disney Channel golden era (Hannah Montana anniversary, Wizards finale, Camp Rock 3 buzz) are everywhere.</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-white mb-1.5 flex items-center gap-x-2"><i class="fa-solid fa-film text-fuchsia-400 w-4"></i> Disclosure Day Domination</h4>
+                                <p class="text-sm">Spielberg's sci-fi blockbuster crushed opening weekend. UFOs, "the truth dropped", and cinematic chaos memes are flooding feeds.</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-white mb-1.5 flex items-center gap-x-2"><i class="fa-solid fa-face-grin-beam text-yellow-400 w-4"></i> Meme of the Week</h4>
+                                <p class="text-sm">The <strong>Supportive Disappointed Challenge</strong> — four emotional tones for any phrase. Peak relatable remix culture right now.</p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-white mb-1.5 flex items-center gap-x-2"><i class="fa-solid fa-gamepad text-cyan-400 w-4"></i> Gaming &amp; Franchise Revival</h4>
+                                <p class="text-sm">GTA VI / Vice City hype in full swing. Shrek 5, Sonic 4 wrapped, and the eternal "X is still alive" meta-meme across gaming and animation.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 pt-6 border-t border-white/10 text-xs text-white/50">
+                            Scanner sources: X real-time trends, news APIs, public social signals, and meme databases. 
+                            Full IG/FB automation available via official APIs upon request.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Design Options -->
+                <div class="lg:w-7/12">
+                    <div class="mb-5 flex items-center justify-between">
+                        <div>
+                            <span class="font-semibold">5 Fresh Design Concepts</span>
+                            <span class="text-xs text-white/50 ml-2">Pick your favorites for production</span>
+                        </div>
+                        <button onclick="copyAssessment()" 
+                                class="text-xs flex items-center gap-x-1.5 px-4 h-8 rounded-2xl border border-white/20 hover:bg-white/5">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Copy Report</span>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4" id="design-options">
+                        <!-- JS populated mini cards -->
+                    </div>
+                    
+                    <div class="mt-6 text-xs bg-zinc-950 border border-white/10 rounded-3xl p-5">
+                        <div class="flex gap-x-4 items-start">
+                            <i class="fa-solid fa-info-circle text-cyan-400 mt-0.5"></i>
+                            <div class="text-white/70 text-xs leading-relaxed">
+                                These designs are generated specifically from this week's scan. 
+                                Select any to fast-track into next Wednesday's production run. 
+                                Want variations or new concepts? Just reply to your weekly report.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CULTURE SCANNER / HOW IT WORKS -->
+    <div id="scanner" class="max-w-screen-2xl mx-auto px-8 py-16">
+        <div class="max-w-3xl mx-auto text-center mb-12">
+            <div class="inline-block px-4 py-1 rounded-3xl bg-white/5 text-xs font-bold tracking-widest mb-3">THE SYSTEM</div>
+            <h2 class="section-header text-5xl font-bold tracking-tighter">Automatic Culture Scanner</h2>
+            <p class="mt-4 text-lg text-white/70">Real-time monitoring of pop culture virality across platforms. Distilled into wearable drops every Wednesday.</p>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div class="bg-zinc-900 border border-white/10 rounded-3xl p-7">
+                <div class="w-12 h-12 flex items-center justify-center bg-cyan-400/10 text-cyan-400 rounded-2xl mb-5">
+                    <i class="fa-brands fa-x-twitter text-3xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">X (Twitter) + Real-time Signals</h3>
+                <p class="text-sm text-white/70">Advanced semantic and keyword tracking for viral threads, meme formats, and breaking pop culture moments as they emerge.</p>
+            </div>
+            <div class="bg-zinc-900 border border-white/10 rounded-3xl p-7">
+                <div class="w-12 h-12 flex items-center justify-center bg-fuchsia-400/10 text-fuchsia-400 rounded-2xl mb-5">
+                    <i class="fa-solid fa-globe text-3xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">Web + News Aggregation</h3>
+                <p class="text-sm text-white/70">Trending topics from entertainment news, TikTok trends, box office, music releases, and gaming announcements parsed daily.</p>
+            </div>
+            <div class="bg-zinc-900 border border-white/10 rounded-3xl p-7">
+                <div class="w-12 h-12 flex items-center justify-center bg-lime-400/10 text-lime-400 rounded-2xl mb-5">
+                    <i class="fa-solid fa-robot text-3xl"></i>
+                </div>
+                <h3 class="font-semibold mb-2">AI Synthesis + Design Gen</h3>
+                <p class="text-sm text-white/70">Every Wednesday our models synthesize the top signals into 5+ original, print-ready t-shirt concepts ready for your approval.</p>
+            </div>
+        </div>
+        
+        <div class="max-w-2xl mx-auto mt-10 text-center text-sm text-white/60">
+            <p><strong>Note on Instagram &amp; Facebook:</strong> Full automated scanning uses official Meta Business APIs (requires app review). 
+            We currently supplement with public trend data and X as the primary real-time pulse. Let us know if you want to activate full Meta integration.</p>
+        </div>
+    </div>
+
+    <!-- ABOUT / CTA -->
+    <div id="about" class="bg-zinc-900 border-t border-white/10 py-16">
+        <div class="max-w-screen-2xl mx-auto px-8">
+            <div class="max-w-2xl">
+                <h2 class="section-header text-5xl font-bold tracking-tighter">How Viral Threads Works</h2>
+                <div class="mt-8 space-y-8 text-[15px]">
+                    <div class="flex gap-5">
+                        <div class="font-mono text-cyan-400 w-6 flex-shrink-0">01</div>
+                        <div><span class="font-semibold">We scan 24/7.</span> Our system watches X, trending news, meme databases, and public social signals for emerging cultural moments.</div>
+                    </div>
+                    <div class="flex gap-5">
+                        <div class="font-mono text-cyan-400 w-6 flex-shrink-0">02</div>
+                        <div><span class="font-semibold">Wednesday Assessment.</span> Every Wednesday you receive a curated report + 5+ fresh design options generated specifically from that week's virality.</div>
+                    </div>
+                    <div class="flex gap-5">
+                        <div class="font-mono text-cyan-400 w-6 flex-shrink-0">03</div>
+                        <div><span class="font-semibold">You choose &amp; we produce.</span> Approve designs. We handle premium printing &amp; fulfillment (via Printful integration ready). Limited runs keep them exclusive.</div>
+                    </div>
+                </div>
+                
+                <div class="mt-10 flex flex-wrap gap-3">
+                    <button onclick="contactForProduction()" 
+                            class="px-6 h-12 rounded-3xl bg-white text-zinc-950 font-semibold flex items-center gap-x-2 hover:bg-white/90">
+                        <span>Start Production Run</span>
+                    </button>
+                    <button onclick="window.location.hash='#scanner'" 
+                            class="px-6 h-12 rounded-3xl border border-white/30 font-medium flex items-center gap-x-2 hover:bg-white/5">
+                        <span>Learn more about the scanner</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 py-8 text-xs text-white/50">
+        <div class="max-w-screen-2xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-y-3">
+            <div>© 2026 Viral Threads Co. All rights reserved. • Austin, Texas based.</div>
+            <div class="flex gap-x-5">
+                <span>Privacy</span>
+                <span>Production Terms</span>
+                <span>Weekly Reports Archive</span>
+            </div>
+            <div>Made with culture • Powered by Grok</div>
+        </div>
+    </footer>
+
+    <!-- CART DRAWER -->
+    <div id="cart-drawer" onclick="if (event.target.id === 'cart-drawer') toggleCart()" 
+         class="hidden fixed inset-0 bg-black/70 z-[100] flex justify-end">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="cart-drawer w-full max-w-md bg-zinc-950 border-l border-white/10 h-full overflow-auto flex flex-col">
+            
+            <div class="p-6 flex items-center justify-between border-b border-white/10">
+                <div class="font-semibold text-xl">Your Cart</div>
+                <button onclick="toggleCart()" class="text-2xl leading-none text-white/60 hover:text-white">&times;</button>
+            </div>
+            
+            <div id="cart-items" class="flex-1 p-6 space-y-5 overflow-auto">
+                <!-- JS injected -->
+            </div>
+            
+            <div class="p-6 border-t border-white/10 bg-zinc-900">
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-white/70">Subtotal</span>
+                    <span id="cart-subtotal" class="font-mono font-semibold">$0</span>
+                </div>
+                <div class="text-[10px] text-white/50 mb-4">Shipping calculated at checkout • Ships from USA</div>
+                
+                <button onclick="stripeCheckout()"
+                        class="w-full h-14 bg-white hover:bg-white/90 active:bg-white transition-all text-zinc-950 font-bold rounded-3xl flex items-center justify-center gap-x-2">
+                    <span>PAY WITH STRIPE</span>
+                </button>
+                
+                <div class="text-center mt-3">
+                    <button onclick="toggleCart()" class="text-xs text-white/60 hover:text-white/90">Continue shopping</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" onclick="if (event.target.id === 'success-modal') hideSuccessModal()" class="hidden fixed inset-0 bg-black/80 z-[110] flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl max-w-md w-full p-8 text-center">
+            <div class="mx-auto w-16 h-16 bg-lime-400/10 text-lime-400 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-check text-4xl"></i>
+            </div>
+            <h3 class="text-3xl font-bold tracking-tight">Order placed!</h3>
+            <p class="mt-3 text-white/70">Thank you for wearing the culture. Your limited edition tees will ship within 3-5 business days.</p>
+            
+            <div class="mt-8 text-xs bg-zinc-950 border border-white/10 rounded-2xl p-4 text-left">
+                <div class="font-mono text-[10px] text-white/60 mb-1">ORDER #VT-20260617-4821</div>
+                <div class="text-sm">You'll receive a confirmation email shortly with tracking.</div>
+            </div>
+            
+            <button onclick="hideSuccessModal()" 
+                    class="mt-6 w-full h-11 rounded-3xl border border-white/30 text-sm font-medium hover:bg-white/5">Back to store</button>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent', '#22f7dd');
+        }
+        
+        // Product Data
+        const products = [
+            {
+                id: 1,
+                name: "2026 is the New 2016",
+                price: 32,
+                image: "assets/2026-new-2016.jpg",
+                desc: "The official tee of the Great Meme Reset. Nostalgia, Harambe energy, and Vine vibes collide in 2026.",
+                badge: "NOSTALGIA"
+            },
+            {
+                id: 2,
+                name: "Supportive Disappointed",
+                price: 29,
+                image: "assets/supportive-disappointed.jpg",
+                desc: "The viral 4-tone meme challenge. Say anything in Supportive, Disappointed, Sarcastic, or Flirty mode.",
+                badge: "MEME OF THE WEEK"
+            },
+            {
+                id: 3,
+                name: "Disclosure Day",
+                price: 34,
+                image: "assets/disclosure-day.jpg",
+                desc: "Spielberg's blockbuster summer moment. The truth dropped in June 2026. Cinematic UFO energy.",
+                badge: "BLOCKBUSTER"
+            },
+            {
+                id: 4,
+                name: "GTA Vice Loading...",
+                price: 31,
+                image: "assets/gta-vice.jpg",
+                desc: "Vice City neon. The eternal hype for GTA VI lives on. Palm trees and synthwave forever.",
+                badge: "GAMING"
+            },
+            {
+                id: 5,
+                name: "Shrek 5 • Still Alive",
+                price: 29,
+                image: "assets/shrek-still-alive.jpg",
+                desc: "Ogres have layers... and apparently endless sequels. The 2026 revival is real.",
+                badge: "FRANCHISE"
+            }
+        ]
+        
+        let cart = []
+        let storageAvailable = true
+        
+        // Safe localStorage wrapper (handles sandboxed iframes / restricted environments)
+        function loadCart() {
+            try {
+                const saved = localStorage.getItem('viralThreadsCart')
+                if (saved) cart = JSON.parse(saved)
+            } catch (e) {
+                storageAvailable = false
+                // Cart will only persist during this page session
+            }
+            updateCartCount()
+        }
+        
+        function saveCart() {
+            if (!storageAvailable) return
+            try {
+                localStorage.setItem('viralThreadsCart', JSON.stringify(cart))
+            } catch (e) {
+                storageAvailable = false
+            }
+        }
+        
+        function updateCartCount() {
+            const countEl = document.getElementById('cart-count')
+            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0)
+            countEl.textContent = totalItems
+            countEl.style.display = totalItems > 0 ? 'flex' : 'none'
+        }
+        
+        // Render Products
+        function renderProducts() {
+            const grid = document.getElementById('products-grid')
+            grid.innerHTML = ''
+            
+            products.forEach(product => {
+                const card = document.createElement('div')
+                card.className = `product-card bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden group`
+                
+                card.innerHTML = `
+                    <div class="relative aspect-[4/3.1] bg-zinc-950 overflow-hidden">
+                        <img src="${product.image}" alt="${product.name}" 
+                             class="product-img w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                             onerror="this.style.display='none'; this.parentNode.innerHTML += '<div class=\'absolute inset-0 flex items-center justify-center bg-zinc-800\'><div class=\'text-center px-6\'><div class=\'text-2xl font-bold tracking-tighter mb-1\'>${product.name}</div><div class=\'text-xs text-white/50\'>Image unavailable<br>Check assets folder</div></div></div>'">
+                        
+                        <div class="absolute top-4 left-4">
+                            <span class="viral-badge px-3 py-px text-[10px]">${product.badge}</span>
+                        </div>
+                        
+                        <div class="absolute top-4 right-4 bg-black/70 text-xs font-mono px-2.5 py-1 rounded-2xl backdrop-blur">
+                            $${product.price}
+                        </div>
+                    </div>
+                    
+                    <div class="p-5">
+                        <div class="font-semibold text-lg tracking-tight leading-tight mb-1">${product.name}</div>
+                        <p class="text-white/60 text-sm line-clamp-2 mb-4 h-[42px]">${product.desc}</p>
+                        
+                        <div class="flex items-center justify-between">
+                            <button onclick="addToCart(${product.id}, this)"
+                                    class="flex-1 bg-white hover:bg-white/90 active:bg-zinc-200 transition-all text-zinc-950 font-bold text-sm h-11 rounded-3xl flex items-center justify-center gap-x-2">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                                <span>ADD TO CART</span>
+                            </button>
+                            
+                            <button onclick="quickView(${product.id})" 
+                                    class="ml-2.5 w-11 h-11 flex-shrink-0 border border-white/20 hover:bg-white/5 rounded-3xl flex items-center justify-center text-white/70 hover:text-white">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                `
+                grid.appendChild(card)
+            })
+        }
+        
+        // Quick View Modal (simple version)
+        function quickView(productId) {
+            const product = products.find(p => p.id === productId)
+            if (!product) return
+            
+            const modal = document.createElement('div')
+            modal.className = `fixed inset-0 bg-black/90 z-[120] flex items-center justify-center p-6`
+            modal.innerHTML = `
+                <div onclick="event.target.remove()" class="absolute inset-0"></div>
+                <div onclick="event.stopImmediatePropagation()" class="relative bg-zinc-900 border border-white/10 rounded-3xl max-w-lg w-full overflow-hidden">
+                    <div class="aspect-[16/10] relative">
+                        <img src="${product.image}" class="w-full h-full object-cover" alt="">
+                        <button onclick="this.closest('.fixed').remove()" class="absolute top-5 right-5 w-9 h-9 bg-black/60 hover:bg-black rounded-2xl flex items-center justify-center text-xl">&times;</button>
+                    </div>
+                    <div class="p-7">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="viral-badge inline-block mb-2">${product.badge}</div>
+                                <h3 class="text-3xl font-bold tracking-tighter">${product.name}</h3>
+                            </div>
+                            <div class="text-right font-mono text-3xl font-semibold">$${product.price}</div>
+                        </div>
+                        
+                        <p class="mt-4 text-white/70">${product.desc}</p>
+                        
+                        <div class="mt-6 text-xs text-white/50">Premium 100% ring-spun cotton • Unisex relaxed fit • S–3XL</div>
+                        
+                        <div class="mt-6 flex gap-3">
+                            <button onclick="addToCart(${product.id}, this); this.closest('.fixed').remove()" 
+                                    class="flex-1 h-14 bg-white text-zinc-950 font-bold rounded-3xl flex items-center justify-center gap-x-2 active:bg-white/90">
+                                ADD TO CART
+                            </button>
+                            <button onclick="this.closest('.fixed').remove()" 
+                                    class="flex-1 h-14 border border-white/30 rounded-3xl font-medium">CLOSE</button>
+                        </div>
+                    </div>
+                </div>
+            `
+            document.body.appendChild(modal)
+        }
+        
+        // Add to Cart
+        function addToCart(productId, buttonEl) {
+            const product = products.find(p => p.id === productId)
+            if (!product) return
+            
+            const existing = cart.find(item => item.id === productId)
+            
+            if (existing) {
+                existing.qty += 1
+            } else {
+                cart.push({ ...product, qty: 1 })
+            }
+            
+            saveCart()
+            updateCartCount()
+            
+            // Visual feedback
+            const originalText = buttonEl.innerHTML
+            buttonEl.innerHTML = `<i class="fa-solid fa-check mr-2"></i> ADDED`
+            buttonEl.disabled = true
+            buttonEl.classList.add('!bg-lime-400', '!text-zinc-950')
+            
+            setTimeout(() => {
+                if (buttonEl && buttonEl.parentNode) {
+                    buttonEl.innerHTML = originalText
+                    buttonEl.disabled = false
+                    buttonEl.classList.remove('!bg-lime-400', '!text-zinc-950')
+                }
+                // Auto open cart on first add sometimes
+                if (cart.length === 1) {
+                    setTimeout(() => toggleCart(), 420)
+                }
+            }, 1100)
+        }
+        
+        // Render Cart
+        function renderCart() {
+            const container = document.getElementById('cart-items')
+            container.innerHTML = ''
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="h-40 flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-shopping-bag text-4xl text-white/20 mb-3"></i>
+                        <p class="text-white/60">Your cart is empty</p>
+                        <p class="text-xs text-white/40 mt-1">Fresh culture drops every Wednesday</p>
+                    </div>
+                `
+                document.getElementById('cart-subtotal').textContent = '$0'
+                return
+            }
+            
+            let subtotal = 0
+            
+            cart.forEach((item, index) => {
+                subtotal += item.price * item.qty
+                
+                const itemEl = document.createElement('div')
+                itemEl.className = `flex gap-4 border-b border-white/10 pb-5`
+                itemEl.innerHTML = `
+                    <div class="w-20 h-20 flex-shrink-0 bg-zinc-800 rounded-2xl overflow-hidden border border-white/10">
+                        <img src="${item.image}" class="w-full h-full object-cover" alt="">
+                    </div>
+                    <div class="flex-1 min-w-0 pt-0.5">
+                        <div class="font-semibold leading-tight pr-6">${item.name}</div>
+                        <div class="text-xs text-white/50 mt-0.5">Unisex • Premium Cotton</div>
+                        
+                        <div class="flex items-center justify-between mt-3">
+                            <div class="flex items-center border border-white/20 rounded-2xl text-sm">
+                                <button onclick="changeQty(${index}, -1)" class="w-8 h-8 flex items-center justify-center hover:bg-white/5 active:bg-white/10 rounded-l-2xl">-</button>
+                                <div class="px-3 font-mono text-sm font-medium border-x border-white/20">${item.qty}</div>
+                                <button onclick="changeQty(${index}, 1)" class="w-8 h-8 flex items-center justify-center hover:bg-white/5 active:bg-white/10 rounded-r-2xl">+</button>
+                            </div>
+                            
+                            <div class="font-mono font-semibold">$${item.price * item.qty}</div>
+                        </div>
+                    </div>
+                    
+                    <button onclick="removeFromCart(${index})" class="text-white/40 hover:text-red-400 self-start mt-1">
+                        <i class="fa-solid fa-trash text-sm"></i>
+                    </button>
+                `
+                container.appendChild(itemEl)
+            })
+            
+            document.getElementById('cart-subtotal').textContent = '$' + subtotal
+        }
+        
+        function changeQty(index, delta) {
+            cart[index].qty += delta
+            if (cart[index].qty < 1) cart[index].qty = 1
+            saveCart()
+            updateCartCount()
+            renderCart()
+        }
+        
+        function removeFromCart(index) {
+            cart.splice(index, 1)
+            saveCart()
+            updateCartCount()
+            renderCart()
+        }
+        
+        function toggleCart() {
+            const drawer = document.getElementById('cart-drawer')
+            const isHidden = drawer.classList.contains('hidden')
+            
+            if (isHidden) {
+                drawer.classList.remove('hidden')
+                drawer.style.display = 'flex'
+                renderCart()
+            } else {
+                drawer.style.display = 'none'
+                drawer.classList.add('hidden')
+            }
+        }
+        
+        // Checkout
+        function checkout() {
+            if (cart.length === 0) return
+            
+            const drawer = document.getElementById('cart-drawer')
+            drawer.style.display = 'none'
+            drawer.classList.add('hidden')
+            
+            // Show checkout modal
+            const checkoutModal = document.createElement('div')
+            checkoutModal.className = `fixed inset-0 bg-black/90 z-[130] flex items-center justify-center p-6`
+            checkoutModal.innerHTML = `
+                <div onclick="event.target.remove()" class="absolute inset-0"></div>
+                <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl w-full max-w-md p-8 relative">
+                    <button onclick="this.closest('.fixed').remove()" class="absolute top-6 right-6 text-white/60 hover:text-white text-2xl">&times;</button>
+                    
+                    <div class="font-bold text-2xl tracking-tight mb-1">Checkout</div>
+                    <div class="text-white/60 text-sm mb-6">Complete your culture drop order</div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-medium text-white/60 block mb-1.5">FULL NAME</label>
+                            <input type="text" value="Devin" class="w-full bg-zinc-950 border border-white/20 focus:border-cyan-400 rounded-2xl h-11 px-4 text-sm outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-medium text-white/60 block mb-1.5">EMAIL</label>
+                                <input type="email" value="devin@leander.tx" class="w-full bg-zinc-950 border border-white/20 focus:border-cyan-400 rounded-2xl h-11 px-4 text-sm outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs font-medium text-white/60 block mb-1.5">PHONE</label>
+                                <input type="tel" value="(512) 555-0192" class="w-full bg-zinc-950 border border-white/20 focus:border-cyan-400 rounded-2xl h-11 px-4 text-sm outline-none">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="text-xs font-medium text-white/60 block mb-1.5">SHIPPING ADDRESS</label>
+                            <input type="text" value="123 Culture Lane, Leander, TX 78641" class="w-full bg-zinc-950 border border-white/20 focus:border-cyan-400 rounded-2xl h-11 px-4 text-sm outline-none">
+                        </div>
+                        
+                        <div class="pt-3 border-t border-white/10">
+                            <div class="flex justify-between text-sm mb-4">
+                                <span class="text-white/70">Total due today</span>
+                                <span class="font-mono font-bold text-xl" id="checkout-total"></span>
+                            </div>
+                            
+                            <div class="text-[10px] text-white/50 mb-4">Payment powered by Stripe (demo). No card charged in this preview.</div>
+                            
+                            <button onclick="completeOrder(this)" 
+                                    class="w-full h-14 bg-gradient-to-r from-cyan-400 to-lime-400 hover:brightness-105 active:brightness-95 transition-all text-zinc-950 font-black rounded-3xl flex items-center justify-center text-base tracking-wider">
+                                PLACE ORDER • PAY SECURELY
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `
+            
+            // Calculate total
+            setTimeout(() => {
+                const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+                const totalEl = checkoutModal.querySelector('#checkout-total')
+                if (totalEl) totalEl.textContent = '$' + total
+            }, 50)
+            
+            document.body.appendChild(checkoutModal)
+        }
+        
+        function completeOrder(btn) {
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> PROCESSING...`
+            btn.disabled = true
+            
+            setTimeout(() => {
+                // Clear cart
+                cart = []
+                saveCart()
+                updateCartCount()
+                
+                // Close checkout modal
+                btn.closest('.fixed').remove()
+                
+                // Show success
+                document.getElementById('success-modal').classList.remove('hidden')
+                document.getElementById('success-modal').style.display = 'flex'
+            }, 1350)
+        }
+        
+        function hideSuccessModal() {
+            const modal = document.getElementById('success-modal')
+            modal.style.display = 'none'
+            modal.classList.add('hidden')
+            // Optional: show thank you message or redirect to home
+        }
+        
+        // Render design options in weekly section
+        function renderDesignOptions() {
+            const container = document.getElementById('design-options')
+            container.innerHTML = ''
+            
+            products.forEach((product, idx) => {
+                const el = document.createElement('div')
+                el.className = `design-option bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden cursor-pointer group`
+                el.innerHTML = `
+                    <div class="aspect-square relative">
+                        <img src="${product.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" alt=""
+                             onerror="this.style.display='none'; this.parentNode.innerHTML += '<div class=\'absolute inset-0 flex items-center justify-center bg-zinc-800 text-center p-4\'><div><div class=\'font-bold text-sm tracking-tight\'>${product.name}</div><div class=\'text-[10px] text-white/40 mt-1\'>Image missing</div></div></div>'">
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-3">
+                            <div class="text-xs font-bold tracking-tight">${product.name}</div>
+                        </div>
+                    </div>
+                    <div class="p-3 flex items-center justify-between text-xs">
+                        <div class="text-white/60">$${product.price}</div>
+                        <button onclick="event.stopImmediatePropagation(); selectDesignForProduction(${product.id}, this)" 
+                                class="px-3 py-px text-[10px] border border-white/30 rounded-xl hover:bg-white hover:text-zinc-950 transition-colors">SELECT</button>
+                    </div>
+                `
+                el.onclick = () => quickView(product.id)
+                container.appendChild(el)
+            })
+        }
+        
+        function selectDesignForProduction(productId, btn) {
+            const product = products.find(p => p.id === productId)
+            btn.innerHTML = 'SELECTED ✓'
+            btn.classList.add('!border-lime-400', '!text-lime-400')
+            btn.disabled = true
+            
+            // Simulate sending to production queue
+            setTimeout(() => {
+                const toast = document.createElement('div')
+                toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 bg-zinc-900 border border-lime-400/30 text-lime-400 px-6 py-3 rounded-3xl text-sm flex items-center gap-x-3 shadow-xl z-[200]`
+                toast.innerHTML = `
+                    <i class="fa-solid fa-check-double"></i> 
+                    <span><strong>${product.name}</strong> added to next production queue. We'll notify you when proofs are ready.</span>
+                `
+                document.body.appendChild(toast)
+                
+                setTimeout(() => {
+                    toast.style.transition = 'all .3s ease'
+                    toast.style.opacity = '0'
+                    setTimeout(() => toast.remove(), 300)
+                }, 3800)
+            }, 420)
+        }
+        
+        function copyAssessment() {
+            const text = `VIRAL THREADS — Weekly Culture Assessment (June 16–22, 2026)
+            
+Top Signals:
+• The Great 2016 Reset ("2026 is the new 2016")
+• Disclosure Day box office domination (Spielberg)
+• Supportive Disappointed Challenge meme
+• GTA Vice City / GTA VI hype + Shrek 5 revival energy
+
+5 Design Concepts ready for production:
+1. 2026 is the New 2016 — $32
+2. Supportive Disappointed — $29
+3. Disclosure Day — $34
+4. GTA Vice Loading... — $31
+5. Shrek 5 • Still Alive — $29
+
+Generated by Viral Threads Culture Scanner • Powered by Grok`
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const orig = event.currentTarget?.innerHTML || ''
+                const btns = document.querySelectorAll('button')
+                // simple feedback
+                const toast = document.createElement('div')
+                toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111827;border:1px solid #64748b30;color:#64748b;padding:8px 18px;border-radius:9999px;font-size:12px'
+                toast.textContent = 'Assessment copied to clipboard'
+                document.body.appendChild(toast)
+                setTimeout(() => toast.remove(), 2200)
+            }).catch(() => {
+                alert(text) // fallback
+            })
+        }
+        
+        function contactForProduction() {
+            const modal = document.createElement('div')
+            modal.className = `fixed inset-0 bg-black/90 z-[140] flex items-center justify-center p-6`
+            modal.innerHTML = `
+                <div onclick="event.target.remove()" class="absolute inset-0"></div>
+                <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 border border-white/10 rounded-3xl max-w-md w-full p-8">
+                    <h3 class="font-bold text-2xl tracking-tight">Ready to produce?</h3>
+                    <p class="text-white/70 mt-2 text-sm">Tell us which designs from this week you'd like to move into production. We handle printing, fulfillment, and can integrate with your Printful/Printify account.</p>
+                    
+                    <div class="mt-6 space-y-3 text-sm">
+                        <div class="flex items-center gap-x-3 text-white/80">
+                            <i class="fa-solid fa-check text-lime-400 w-4"></i> 
+                            <span>Premium DTG or screen printing</span>
+                        </div>
+                        <div class="flex items-center gap-x-3 text-white/80">
+                            <i class="fa-solid fa-check text-lime-400 w-4"></i> 
+                            <span>Global fulfillment (US, EU, AU warehouses)</span>
+                        </div>
+                        <div class="flex items-center gap-x-3 text-white/80">
+                            <i class="fa-solid fa-check text-lime-400 w-4"></i> 
+                            <span>Mockups, size charts &amp; marketing assets included</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <a href="mailto:hello@viralthreads.co?subject=Production%20Request%20-%20June%202026%20Drop" 
+                           class="block text-center w-full h-12 bg-white text-zinc-950 font-bold rounded-3xl flex items-center justify-center">EMAIL PRODUCTION TEAM</a>
+                        <div class="text-center text-[10px] text-white/50 mt-3">Or reply to your Wednesday assessment email</div>
+                    </div>
+                </div>
+            `
+            document.body.appendChild(modal)
+        }
+        
+        // Initialize everything
+        function initializeStore() {
+            initializeTailwind()
+            
+            // Optional: Log once that this is a demo using Play CDN
+            console.log('%c[Viral Threads] Demo site using Tailwind Play CDN for zero-setup experience. For production, use Tailwind CLI.', 'color:#64748b; font-size: 10px');
+            
+            loadCart()
+            renderProducts()
+            renderDesignOptions()
+            updateCartCount()
+            
+            // Keyboard support for cart
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '/' && document.activeElement.tagName === 'BODY') {
+                    e.preventDefault()
+                    toggleCart()
+                }
+            })
+            
+            // Easter egg: Konami-ish or just console note
+            console.log('%c[VIRAL THREADS] E-commerce demo initialized. Cart uses safe storage (localStorage with fallback).', 'color:#64748b;font-size:9px')
+            
+            // Optional: Show a welcome toast once (safe version)
+            try {
+                if (!localStorage.getItem('vt_welcome_shown')) {
+                    setTimeout(() => {
+                        try {
+                            localStorage.setItem('vt_welcome_shown', 'true')
+                        } catch (e) {}
+                    }, 8500)
+                }
+            } catch (e) {}
+            
+            // Make sure cart count badge is correct on load
+            const countEl = document.getElementById('cart-count')
+            if (countEl.textContent === '0') countEl.style.display = 'none'
+        }
+        
+        // ==================== STRIPE INTEGRATION ====================
+        // Your Stripe Test Publishable Key
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_51TizF8AERO9dcL3hHJG3PybymXzziLB4YY9ISKxB10O8A1iNXxiyKuN46V9nwtSlTI8UwtoijF4H42EXvv2f2pKy00QB6ClQOf';
+        
+        let stripe;
+        
+        function initStripe() {
+            console.log('%c[Stripe] Checking initialization...', 'color:#64748b');
+            console.log('%c[Stripe] Key prefix:', 'color:#64748b', STRIPE_PUBLISHABLE_KEY ? STRIPE_PUBLISHABLE_KEY.substring(0, 15) + '...' : 'MISSING');
+
+            if (typeof Stripe === 'undefined') {
+                console.error('%c[Stripe] ERROR: Stripe.js did not load from CDN', 'color:red');
+                return;
+            }
+
+            if (!STRIPE_PUBLISHABLE_KEY || !STRIPE_PUBLISHABLE_KEY.startsWith('pk_')) {
+                console.error('%c[Stripe] ERROR: Invalid publishable key', 'color:red');
+                return;
+            }
+
+            try {
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                console.log('%c[Stripe] ✓ Successfully initialized', 'color:#22f7dd');
+            } catch (e) {
+                console.error('%c[Stripe] Failed to create Stripe instance:', 'color:red', e);
+            }
+        }
+        
+        // Real Stripe Checkout using Checkout Sessions
+        async function stripeCheckout() {
+            if (!stripe) {
+                alert("Stripe failed to initialize. Please check the browser console (F12) for details, then redeploy the site.");
+                console.error('%c[Stripe] stripe object is null. Check initStripe() logs above.', 'color:red');
+                return;
+            }
+
+            if (cart.length === 0) return;
+
+            // Find the checkout button for loading state
+            const checkoutBtn = document.querySelector('#cart-drawer button');
+            const originalText = checkoutBtn ? checkoutBtn.innerHTML : 'PAY WITH STRIPE';
+
+            try {
+                if (checkoutBtn) {
+                    checkoutBtn.innerHTML = 'Connecting to Stripe...';
+                    checkoutBtn.disabled = true;
+                }
+
+                // Prepare clean cart data
+                const cartItems = cart.map(item => ({
+                    name: item.name,
+                    price: item.price,
+                    qty: item.qty
+                }));
+
+                // Call Vercel serverless function
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: cartItems })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.url) {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+
+                // Redirect to Stripe Checkout
+                window.location.href = data.url;
+
+            } catch (error) {
+                console.error('Stripe Checkout Error:', error);
+                alert('Error connecting to Stripe. Please try again or check the console.');
+
+                if (checkoutBtn) {
+                    checkoutBtn.innerHTML = originalText;
+                    checkoutBtn.disabled = false;
+                }
+            }
+        }
+        
+        function showFakeCheckoutSuccess() {
+            // Original fake success (kept as fallback)
+            const drawer = document.getElementById('cart-drawer');
+            if (drawer) {
+                drawer.style.display = 'none';
+                drawer.classList.add('hidden');
+            }
+            
+            document.getElementById('success-modal').classList.remove('hidden');
+            document.getElementById('success-modal').style.display = 'flex';
+            
+            // Clear cart
+            cart = [];
+            saveCart();
+            updateCartCount();
+        }
+        
+        // Boot
+        window.onload = function() {
+            initializeStore();
+            initStripe();
+        }
+    </script>
+</body>
+</html>
