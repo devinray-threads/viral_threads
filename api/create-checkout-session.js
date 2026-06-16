@@ -1,3 +1,4 @@
+// api/create-checkout-session.js
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async function handler(req, res) {
@@ -6,7 +7,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (!process.env.STRIPE_SECRET_KEY) {
-    console.error('STRIPE_SECRET_KEY is missing in environment variables');
+    console.error('❌ STRIPE_SECRET_KEY is missing');
     return res.status(500).json({ error: 'Stripe is not configured on the server' });
   }
 
@@ -32,16 +33,13 @@ module.exports = async function handler(req, res) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${req.headers.origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.origin}/?success=true`,
       cancel_url: `${req.headers.origin}/?canceled=true`,
-      metadata: {
-        source: 'viral-threads-website'
-      }
     });
 
     res.status(200).json({ url: session.url });
   } catch (error) {
-    console.error('Stripe Checkout Session Error:', error);
+    console.error('Stripe Error:', error);
     res.status(500).json({ error: error.message || 'Internal server error' });
   }
 };
