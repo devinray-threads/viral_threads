@@ -43,17 +43,29 @@ module.exports = async function handler(req, res) {
     const lineItems = items.map((item) => ({
       price_data: {
         currency: 'usd',
-        product_data: { name: item.name || 'Viral Threads Tee' },
+        product_data: {
+          name: item.name || 'Viral Threads Tee',
+          metadata: { product_id: String(item.id || '') },
+        },
         unit_amount: Math.round((item.price || 0) * 100),
       },
       quantity: item.qty || 1,
     }));
+
+    const cartMetadata = JSON.stringify(
+      items.map((item) => ({ id: item.id, qty: item.qty || 1 }))
+    );
 
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
       success_url: `${siteUrl}/?success=true`,
       cancel_url: `${siteUrl}/`,
+      shipping_address_collection: {
+        allowed_countries: ['US', 'CA', 'GB', 'AU'],
+      },
+      phone_number_collection: { enabled: true },
+      metadata: { cart_items: cartMetadata },
     });
 
     res.status(200).json({ url: session.url });
